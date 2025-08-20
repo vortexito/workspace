@@ -9,7 +9,6 @@ A01642633 - Bernardo González Maza
 import math
 import tkinter as tk
 from tkinter import font as tkfont
-from tkinter import *
 
 # Gravitational constant in m^3 kg^-1 s^-2
 G = 6.67428e-11
@@ -97,6 +96,8 @@ class App(tk.Tk):
         self.header_font = tkfont.Font(family = "Arial", size = 18)
         self.button_font = tkfont.Font(family = "Arial", size = 14)
         self.label_font = tkfont.Font(family = "Arial", size = 12)
+        self.label_font_bold = tkfont.Font(family="Arial", size=12, weight="bold")
+
 
         container = tk.Frame(self, padx = 10, pady = 10)
         container.pack(side = "top", fill = "both", expand = True)
@@ -138,14 +139,23 @@ class App(tk.Tk):
         self.show_frame("ConversionPage")
 
     def open_exoplanet_info_page(self, exoplanet_name):
-        if "ExoplanetInfoPage" in self.frames:
-            self.frames["ExoplanetInfoPage"].destroy()
+        # This function creates and displays the page for a specific exoplanet.
+        page_name = "ExoplanetInfoPage"
         
+        # If a previous info page exists, destroy it to ensure we start fresh.
+        if page_name in self.frames:
+            self.frames[page_name].destroy()
+        
+        # The parent for all our pages is the main container frame.
         parent = self.winfo_children()[0]
+        
+        # Create a new instance of the info page.
         frame = ExoplanetInfoPage(parent=parent, controller=self, exoplanet_name=exoplanet_name)
-        self.frames["ExoplanetInfoPage"] = frame
+        
+        # Store the new frame, place it on the screen, and show it.
+        self.frames[page_name] = frame
         frame.grid(row=0, column=0, sticky="nsew")
-        self.show_frame("ExoplanetInfoPage")
+        self.show_frame(page_name)
 
 
 class MainMenu(tk.Frame):
@@ -244,9 +254,11 @@ class ExoplanetInfoPage(tk.Frame):
         # Display all information from the dictionary
         row_counter = 0
         for key, value in planet_info.items():
-            key_label = tk.Label(info_frame, text=f"{key}:", font=controller.label_font, weight="bold")
+            # Using the bold font for the keys (e.g., "Mass:")
+            key_label = tk.Label(info_frame, text=f"{key}:", font=controller.label_font_bold)
             key_label.grid(row=row_counter, column=0, sticky="ne", pady=5, padx=10)
             
+            # Using the regular font for the values
             value_label = tk.Label(info_frame, text=value, font=controller.label_font, wraplength=500, justify="left")
             value_label.grid(row=row_counter, column=1, sticky="nw", pady=5, padx=10)
             row_counter += 1
