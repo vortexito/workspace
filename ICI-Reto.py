@@ -9,11 +9,50 @@ A01642633 - Bernardo González Maza
 import math
 import tkinter as tk
 from tkinter import font as tkfont
+from tkinter import *
 
-G = 6.67428e-11  # Gravitational constant in m^3 kg^-1 s^-2
+# Gravitational constant in m^3 kg^-1 s^-2
+G = 6.67428e-11
+
+# Modular dictionary for exoplanet data.
+# You can add or remove exoplanets here.
+EXOPLANET_DATA = {
+    "Proxima Centauri b": {
+        "Discovery Date": "2016",
+        "Mass": "1.17 Earths",
+        "Radius": "1.1 Earths",
+        "Orbital Period": "11.2 days",
+        "Host Star": "Proxima Centauri",
+        "Details": "The closest known exoplanet to our solar system, located in the habitable zone of its red dwarf star."
+    },
+    "TRAPPIST-1e": {
+        "Discovery Date": "2017",
+        "Mass": "0.69 Earths",
+        "Radius": "0.92 Earths",
+        "Orbital Period": "6.1 days",
+        "Host Star": "TRAPPIST-1",
+        "Details": "Considered one of the most promising potentially habitable exoplanets due to its size, temperature, and the star it orbits."
+    },
+    "Kepler-452b": {
+        "Discovery Date": "2015",
+        "Mass": "Estimated ~5 Earths",
+        "Radius": "1.6 Earths",
+        "Orbital Period": "385 days",
+        "Host Star": "Kepler-452",
+        "Details": "Nicknamed 'Earth's cousin', it was one of the first near-Earth-sized planets found in the habitable zone of a Sun-like star."
+    },
+    "Gliese 667 Cc": {
+        "Discovery Date": "2011",
+        "Mass": "3.8 Earths",
+        "Radius": "Estimated ~1.5 Earths",
+        "Orbital Period": "28 days",
+        "Host Star": "Gliese 667 C",
+        "Details": "Orbits a red dwarf in a triple-star system and receives about 90% of the light that Earth does."
+    }
+}
+
 
 def excentricityCalculator(majorAxis, minorAxis):
-    # Calculates excentricity from semi-major and semi-minor axes
     if majorAxis <= 0 or minorAxis <= 0:
         raise ValueError("Axes must be positive.")
     if minorAxis > majorAxis:
@@ -21,13 +60,11 @@ def excentricityCalculator(majorAxis, minorAxis):
     return math.sqrt(1 - (minorAxis**2 / majorAxis**2))
 
 def orbitalPeriodCalculator(majorAxis, M):
-    # Calculates orbital period using Kepler´s third law
     if majorAxis <= 0 or M <= 0:
         raise ValueError("Semi-major axis and mass must be positive")
     return 2 * math.pi * math.sqrt(majorAxis**3 / (G * M))
 
 def majorAxisCalculator(perihelion, aphelion):
-    # Calculates semi-major axis from perihelion and aphelion
     if perihelion <= 0 or aphelion <= 0:
         raise ValueError("Perihelion and aphelion must be positive")
     if perihelion > aphelion:
@@ -35,19 +72,16 @@ def majorAxisCalculator(perihelion, aphelion):
     return (perihelion + aphelion) / 2
 
 def minorAxisCalculator(majorAxis, excentricity):
-    # Calculates semi-minor axis from semi-major axis and excentricity
     if majorAxis <= 0 or not (0 <= excentricity <1):
         raise ValueError("Invalid major axis or excentricity")
     return majorAxis * math.sqrt(1 - excentricity**2)
 
 def perihelionCalculator(majorAxis, excentricity):
-    # Calculates perihelion from semi-major axis and excentricity
     if majorAxis <= 0 or not (0 <= excentricity <1):
         raise ValueError("Invalid major axis or excentricity")
     return majorAxis * (1 - excentricity)
 
 def aphelionCalculator(majorAxis, excentricity):
-    # Calculates aphelion from semi-major axis and excentricity 
     if majorAxis <= 0 or not (0 <= excentricity < 1):
         raise ValueError("Invalid major axis or excentricity")
     return majorAxis * (1 + excentricity)
@@ -71,7 +105,7 @@ class App(tk.Tk):
 
         self.frames = {}
 
-        for F in (MainMenu,):
+        for F in (MainMenu, ExoplanetListPage):
             page_name = F.__name__
             frame = F(parent = container, controller = self)
             self.frames[page_name] = frame
@@ -80,12 +114,10 @@ class App(tk.Tk):
         self.show_frame("MainMenu")
 
     def show_frame(self, page_name):
-        # Show a frame for the given page name
         frame = self.frames[page_name]
         frame.tkraise()
 
     def open_calc_page(self, calculation_name):
-        # Create and shows a calculation page dynamically
         if "CalculationPage" in self.frames:
             self.frames["CalculationPage"].destroy()
 
@@ -96,7 +128,6 @@ class App(tk.Tk):
         self.show_frame("CalculationPage")
 
     def open_conversion_page(self):
-        # Create and shows the conversion page
         if "ConversionPage" in self.frames:
             self.frames["ConversionPage"].destroy()
 
@@ -106,6 +137,17 @@ class App(tk.Tk):
         frame.grid(row=0, column=0, sticky="nsew")
         self.show_frame("ConversionPage")
 
+    def open_exoplanet_info_page(self, exoplanet_name):
+        if "ExoplanetInfoPage" in self.frames:
+            self.frames["ExoplanetInfoPage"].destroy()
+        
+        parent = self.winfo_children()[0]
+        frame = ExoplanetInfoPage(parent=parent, controller=self, exoplanet_name=exoplanet_name)
+        self.frames["ExoplanetInfoPage"] = frame
+        frame.grid(row=0, column=0, sticky="nsew")
+        self.show_frame("ExoplanetInfoPage")
+
+
 class MainMenu(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
@@ -114,20 +156,19 @@ class MainMenu(tk.Frame):
         label = tk.Label(self, text = "Exoplanet Information Calculator", font = controller.title_font)
         label.pack(side = "top", fill = "x", pady = 20)
 
-        label = tk.Label(self, text = "Select the equation you want to solve:", font = controller.header_font)
+        label = tk.Label(self, text = "Select an option:", font = controller.header_font)
         label.pack(pady = 10)
         
-        # This is the button that opens the conversion page
         conversion_button = tk.Button(
             self,
-            text="Unit Conversions (days, km, AU)",
+            text="Unit Conversions",
             font=controller.button_font,
             command=lambda: controller.open_conversion_page()
         )
-        conversion_button.pack(pady=20, ipady=10)
+        conversion_button.pack(pady=10, ipady=10)
 
         button_frame = tk.Frame(self)
-        button_frame.pack(pady = 20)
+        button_frame.pack(pady = 10)
 
         buttons = {
             "Excentricity": "excentricity", "Orbital Period": "orbitalPeriod",
@@ -149,6 +190,69 @@ class MainMenu(tk.Frame):
             if col > 1:
                 col = 0
                 row += 1
+        
+        # Button to open the exoplanet information page
+        exoplanet_button = tk.Button(
+            self,
+            text="Potentially Habitable Exoplanets",
+            font=controller.button_font,
+            command=lambda: controller.show_frame("ExoplanetListPage")
+        )
+        exoplanet_button.pack(pady=20, ipady=10)
+
+class ExoplanetListPage(tk.Frame):
+    def __init__(self, parent, controller):
+        super().__init__(parent)
+        self.controller = controller
+
+        title = tk.Label(self, text="Potentially Habitable Exoplanets", font=controller.title_font)
+        title.pack(pady=20)
+
+        subtitle = tk.Label(self, text="Select an exoplanet to learn more", font=controller.header_font)
+        subtitle.pack(pady=10)
+
+        buttons_frame = tk.Frame(self)
+        buttons_frame.pack(pady=20)
+        
+        # Dynamically create buttons from the data dictionary
+        for planet_name in EXOPLANET_DATA:
+            button = tk.Button(
+                buttons_frame,
+                text=planet_name,
+                font=controller.button_font,
+                width=20,
+                command=lambda name=planet_name: controller.open_exoplanet_info_page(name)
+            )
+            button.pack(pady=7, ipady=5)
+
+        back_button = tk.Button(self, text="Back to Menu", font=controller.button_font, command=lambda: controller.show_frame("MainMenu"))
+        back_button.pack(pady=20)
+
+class ExoplanetInfoPage(tk.Frame):
+    def __init__(self, parent, controller, exoplanet_name):
+        super().__init__(parent)
+        self.controller = controller
+        
+        planet_info = EXOPLANET_DATA[exoplanet_name]
+
+        title = tk.Label(self, text=exoplanet_name, font=controller.title_font)
+        title.pack(pady=20)
+
+        info_frame = tk.Frame(self)
+        info_frame.pack(pady=10, padx=20)
+
+        # Display all information from the dictionary
+        row_counter = 0
+        for key, value in planet_info.items():
+            key_label = tk.Label(info_frame, text=f"{key}:", font=controller.label_font, weight="bold")
+            key_label.grid(row=row_counter, column=0, sticky="ne", pady=5, padx=10)
+            
+            value_label = tk.Label(info_frame, text=value, font=controller.label_font, wraplength=500, justify="left")
+            value_label.grid(row=row_counter, column=1, sticky="nw", pady=5, padx=10)
+            row_counter += 1
+
+        back_button = tk.Button(self, text="Back to Exoplanet List", font=controller.button_font, command=lambda: controller.show_frame("ExoplanetListPage"))
+        back_button.pack(pady=20)
 
 class ConversionPage(tk.Frame):
     def __init__(self, parent, controller):
@@ -240,8 +344,6 @@ class CalculationPage(tk.Frame):
         self.create_widgets()
 
     def create_widgets(self):
-        # Creates all the labels, entry boxes, and buttons for this page
-
         calc_details = self.calc_requirements[self.calc_name]
 
         title_text = self.calc_name.replace('e', 'e', 1).replace('O', ' O', 1).replace('M', ' M', 1).replace('P', ' P', 1).replace('A', ' A', 1)
@@ -273,7 +375,6 @@ class CalculationPage(tk.Frame):
         back_button.grid(row=0, column=1, padx=10)
 
     def perform_calculation(self):
-        # Gets user input, calls the function, and displays the result
         try:
             calc_details = self.calc_requirements[self.calc_name]
             calculation_function = calc_details["func"]
