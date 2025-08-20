@@ -176,7 +176,7 @@ class MainMenu(BackgroundImageFrame):
         super().__init__(parent, controller, image_path="Background.png")
 
         label = tk.Label(self, text="Exoplanet Information Calculator", font=controller.title_font, bg='#333', fg='white')
-        label.pack(side="top", fill="x", pady=20)
+        label.pack(side="top", pady=20, ipady=10, padx=20)
 
         label = tk.Label(self, text="Select an option:", font=controller.header_font, bg='#444', fg='white')
         label.pack(pady=10)
@@ -218,31 +218,52 @@ class ExoplanetListPage(tk.Frame):
         back_button = tk.Button(self, text="Back to Menu", font=controller.button_font, command=lambda: controller.show_frame("MainMenu"))
         back_button.pack(pady=20)
 
-class ExoplanetInfoPage(BackgroundImageFrame):
+class ExoplanetInfoPage(tk.Frame): # Change the base class to tk.Frame
     def __init__(self, parent, controller, exoplanet_name):
-        planet_info = EXOPLANET_DATA[exoplanet_name]
-        image_file = planet_info.get("Image", "Default.png") # Use a default if no image is specified
-        super().__init__(parent, controller, image_path=image_file)
+        super().__init__(parent)
+        self.controller = controller
         
-        # A semi-transparent overlay to make text more readable
-        overlay = tk.Frame(self, bg='black', highlightthickness=0)
-        overlay.place(relx=0.5, rely=0.5, anchor="center", relwidth=0.8, relheight=0.7)
+        # Load and display the image at the top
+        planet_info = EXOPLANET_DATA[exoplanet_name]
+        image_file = planet_info.get("Image", "Default.png")
+        try:
+            # Open the image, resize it, and create a PhotoImage
+            img = Image.open(image_file)
+            img = img.resize((400, 400), Image.LANCZOS)
+            self.planet_image = ImageTk.PhotoImage(img)
+            
+            image_label = tk.Label(self, image=self.planet_image)
+            image_label.pack(pady=(20, 0)) # Add some padding below the image
+        except FileNotFoundError:
+            print(f"Warning: Image file not found for '{exoplanet_name}' at '{image_file}'")
+            # If the image is not found, you can display a placeholder or nothing
+            tk.Label(self, text="Image not available", font=controller.label_font).pack(pady=(20, 0))
+        except Exception as e:
+            print(f"Error loading image for '{exoplanet_name}': {e}")
+            tk.Label(self, text="Error loading image", font=controller.label_font).pack(pady=(20, 0))
 
-        title = tk.Label(overlay, text=exoplanet_name, font=controller.title_font, fg="white", bg='black')
-        title.pack(pady=20)
+        # Title for the exoplanet
+        title = tk.Label(self, text=exoplanet_name, font=controller.title_font)
+        title.pack(pady=10)
 
-        info_frame = tk.Frame(overlay, bg='black')
-        info_frame.pack(pady=10, padx=20)
+        # Frame for the information text
+        info_frame = tk.Frame(self)
+        info_frame.pack(pady=10, padx=20, fill="both", expand=True)
 
         row_counter = 0
         for key, value in planet_info.items():
-            if key == "Image": continue # Don't display the image filename
-            key_label = tk.Label(info_frame, text=f"{key}:", font=controller.label_font_bold, fg="white", bg='black')
+            if key == "Image":
+                continue # Do not display the image filename
+            
+            key_label = tk.Label(info_frame, text=f"{key}:", font=controller.label_font_bold)
             key_label.grid(row=row_counter, column=0, sticky="ne", pady=5, padx=10)
-            value_label = tk.Label(info_frame, text=value, font=controller.label_font, wraplength=450, justify="left", fg="white", bg='black')
+            
+            value_label = tk.Label(info_frame, text=value, font=controller.label_font, wraplength=450, justify="left")
             value_label.grid(row=row_counter, column=1, sticky="nw", pady=5, padx=10)
+            
             row_counter += 1
 
+        # Back button at the bottom
         back_button = tk.Button(self, text="Back to Exoplanet List", font=controller.button_font, command=lambda: controller.show_frame("ExoplanetListPage"))
         back_button.pack(side="bottom", pady=20)
 
