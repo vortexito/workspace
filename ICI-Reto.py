@@ -24,7 +24,7 @@ EXOPLANET_DATA = {
         "Orbital Period": "11.2 days",
         "Host Star": "Proxima Centauri",
         "Details": "The closest known exoplanet to our solar system, located in the habitable zone of its red dwarf star.",
-        "Image": "Kepler_442b.png"
+        "Image": "Proxima_Centaurib.png"
     },
     "Kepler-442 b": {
         "Discovery Date": "2015",
