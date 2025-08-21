@@ -58,7 +58,6 @@ EXOPLANET_DATA = {
     }
 }
 
-
 def excentricityCalculator(majorAxis, minorAxis):
     if majorAxis <= 0 or minorAxis <= 0:
         raise ValueError("Axes must be positive.")
@@ -164,7 +163,6 @@ class App(tk.Tk):
         self.frames[page_name] = frame
         frame.grid(row=0, column=0, sticky="nsew")
         self.show_frame(page_name)
-
 
 class MainMenu(tk.Frame):
     def __init__(self, parent, controller):
@@ -343,7 +341,6 @@ class ConversionPage(tk.Frame):
             self.au_result.config(text=f"{meters:.4e} meters", fg="green")
         except ValueError:
             self.au_result.config(text="Invalid input", fg="red")
-
 
 class CalculationPage(tk.Frame):
     def __init__(self, parent, controller, calc_name):
